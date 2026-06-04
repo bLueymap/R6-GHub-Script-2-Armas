@@ -32,7 +32,7 @@ Para navegar pelos operadores, alternar armas e ligar/desligar as funções, uti
 
 ### 🔫 Troca de Armas (Primária ↔️ Secundária)
 
-* `Click no Scroll do Mouse`: Alterna instantaneamente entre os perfis de recuo da arma **Primária `[P]` e **Secundária `[S]**`. O console do G-Hub atualiza o indicador em tempo real para que você saiba exatamente qual tabela de recuo está ativa.
+* `Click no Scroll do Mouse`: Alterna instantaneamente entre os perfis de recuo da arma **Primária `[P]`** e **Secundária `[S]`**. O console do G-Hub atualiza o indicador em tempo real para que você saiba exatamente qual tabela de recuo está ativa.
 
 ---
 

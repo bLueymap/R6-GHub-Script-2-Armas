@@ -1,0 +1,214 @@
+--[[
+
+CONTROLES:
+
+[ ALT Direita ] + Botões laterias (Frente/Tras) = SELEÇÃO DE OPERADORES
+   - CTRL Direita + Botão da Frente (MB5) = Próximo operado (do lado atual)
+   - CTRL Direita + Botão de Tras (MB4)    = Operador anterior (do lado atual)
+
+[ ALT Direita ]  + Side Button (Frente/Tras) = SYSTEMA / TROCA DE LADOS
+   - ALT Direita + Frente (MB5)  = Liga e desliga o script
+   - ALT Direita  + Tras (MB4) = Troca de lado de operadores (Ataque <-> Defesa)
+
+[ Scroll do Mouse ] = TROCA DE ARMAS (Primária <-> Secundária)
+   - Cada click alterna automaticamente entre o recuo da Primária [P] e Secundária [S]
+
+]]
+
+EnablePrimaryMouseButtonEvents(true)
+
+local v1,v2,v3,v4,v5,v6=OutputLogMessage,IsModifierPressed,IsMouseButtonPressed,GetRunningTime,MoveMouseRelative,Sleep
+local k_map={tog=5,cyc=4,aim=3,sht=1};local b_on=true
+
+local current_side = 1 
+local i_ptr = 1 
+local current_weapon = "p" -- "p" para primária, "s" para secundária
+
+-- Tabelas de Operadores (Estrutura separada por arma Primária [p] e Secundária [s])
+local sides = {
+  [1] = {
+    name = "ATACANTES",
+    ops = {
+      {n="Sledge",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Thatcher",  p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Ash",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Thermite",  p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Twitch",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Montagne",  p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Glaz",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Fuze",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Blitz",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="IQ",        p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Buck",      p={r=16,x1=-1,tm1=1100,x2=1,tm2=1500,y1=2,tym1=1100,y2=1,tym2=1400}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Blackbeard",p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Capitão",   p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Hibana",    p={r=14,x1=-1,tm1=100,x2=0,tm2=0,y1=1,tym1=500,y2=1,tym2=900},  s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Jackal",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Ying",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Zofia",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Dokkaebi",  p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Lion",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Finka",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Maverick",  p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Nomad",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Gridlock",  p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Nøkk",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Amaru",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Kali",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Iana",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Ace",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Zero",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Flores",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Osa",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Sens",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Grim",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Brava",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Ram",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Deimos",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Striker",   p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Rauora",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}}
+    }
+  },
+  [2] = {
+    name = "DEFENSORES",
+    ops = {
+      {n="Smoke",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Mute",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Castle",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Pulse",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Doc",        p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Rook",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Kapkan",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Tachanka",   p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Jäger",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Bandit",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Frost",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Valkyrie",   p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Caveira",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Echo",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Mira",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Lesion",     p={r=6,x1=-1,tm1=500,x2=1,tm2=800,y1=1,tym1=350,y2=1,tym2=830}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Ela",        p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Vigil",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Maestro",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Alibi",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Clash",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Kaid",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Mozzie",     p={r=6,x1=-1,tm1=150,x2=1,tm2=250,y1=-1,tym1=40,y2=1,tym2=550}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Warden",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Goyo",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Wamai",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Oryx",       p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Melusi",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Aruni",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Thunderbird",p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Thorn",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Azami",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Solis",      p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Fenrir",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Tubarão",    p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Skopós",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Sentry",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}},
+      {n="Denari",     p={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}, s={r=10,x1=0,tm1=0,x2=0,tm2=0,y1=0,tym1=0,y2=0,tym2=0}}
+    }
+  }
+}
+
+local g_ui={c=6,w=13,p=2,chk="[✅]",unk=" .. "} 
+
+local function f_r() return math.ceil(#sides[current_side].ops / g_ui.c) end
+local function f_pad(s,l) local p=l-#s; return(p>0) and s..string.rep(" ",p) or s end
+
+local function f_ln(row,sel)
+ local ln={}
+ local current_ops = sides[current_side].ops
+ for c=1,g_ui.c do
+  local idx=((row-1)*g_ui.c)+c
+  if idx<=#current_ops then
+   local pre=(idx==sel) and g_ui.chk or g_ui.unk
+   local txt=pre..(current_ops[idx].n or"")
+   if#txt>g_ui.w then txt=txt:sub(1,g_ui.w-1).."."end
+   table.insert(ln,f_pad(txt,g_ui.w))
+  else
+   table.insert(ln,string.rep(" ",g_ui.w))
+  end
+ end
+ return table.concat(ln,string.rep(" ",g_ui.p))
+end
+
+function _u(sel)
+ v1(string.rep("\n",50))
+ local st=(b_on and"[ ON ]")or"[ OFF ]"
+ local side_name = sides[current_side].name
+ local wp_name = (current_weapon == "p" and "[P] PRIMARIA") or "[S] SECUNDARIA"
+ 
+ v1(" ________________________________________________________________________________ \n")
+ v1("|  LADO: "..f_pad(side_name, 12).."          |  STATUS: "..f_pad(st, 7).."      | ARMA: "..f_pad(wp_name, 14).." |\n")
+ v1("|________________________________________________________________________________|\n")
+ for r=1,f_r() do v1(" "..f_ln(r,sel).."\n")end
+ v1(" ________________________________________________________________________________ \n")
+end
+
+_u(i_ptr)
+
+function OnEvent(evt,arg)
+ local c_dn=v2("rctrl");local a_dn=v2("ralt")
+ local current_ops = sides[current_side].ops
+ 
+ -- Troca de arma ao CLICAR na rodinha do mouse (Botão do Meio / MB3)
+ if (evt == "MOUSE_BUTTON_PRESSED" and arg == 3) then 
+  if current_weapon == "p" then 
+   current_weapon = "s"
+  else 
+   current_weapon = "p"
+  end
+  _u(i_ptr)
+ end
+ 
+ if(evt=="MOUSE_BUTTON_PRESSED")then
+  if c_dn then
+   if arg==k_map.tog then 
+    i_ptr=(i_ptr%#current_ops)+1
+    _u(i_ptr)
+    return
+   elseif arg==k_map.cyc then 
+    i_ptr=((i_ptr-2)%#current_ops)+1
+    _u(i_ptr)
+    return 
+   end
+  elseif a_dn then
+   -- Removido o conflito com o botão de mira (MB3)
+   if arg==k_map.tog then 
+    b_on=not b_on
+    _u(i_ptr)
+    return 
+   elseif arg==k_map.cyc then 
+    if current_side == 1 then
+     current_side = 2
+    else
+     current_side = 1
+    end
+    i_ptr = 1
+    current_weapon = "p" 
+    _u(i_ptr)
+    return
+   end
+  end
+ end
+ 
+ if not b_on then return end
+ 
+ -- Mantém a checagem do botão direito (MB3 no k_map) para mirar
+ while v3(k_map.aim) do
+  local op=sides[current_side].ops[i_ptr][current_weapon]
+  while v3(k_map.sht) and v3(k_map.aim) do
+   local ts=v4()
+   while v3(k_map.sht) and v3(k_map.aim) do
+    local now=v4(); local tm=now-ts; local mx,my=0,op.r
+    if tm>=op.tm1 then mx=mx+op.x1; if tm>=op.tm2 then mx=mx+op.x2 end end
+    if tm>=op.tym1 then my=my+op.y1; if tm>=op.tym2 then my=my+op.y2 end end
+    v5(mx,my); v6(7)
+   end
+  end
+ end
+end
